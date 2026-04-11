@@ -14,3 +14,4 @@ if __name__ == "__main__":
     print("用main控制的加载的顶层代码")
     config = get_config()
     print(config)
+    
