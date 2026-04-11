@@ -13,7 +13,6 @@ def main():
         api_key=api_config["api_key"],
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
         model="qwen-plus-2025-07-14",
-        
     )
 
     messages = [
