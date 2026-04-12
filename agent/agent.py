@@ -11,8 +11,8 @@ def main():
 
     llm = ChatOpenAI(
         api_key=api_config["api_key"],
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-        model="qwen-plus-2025-07-14",
+        base_url=api_config["base_url"],
+        model=api_config["model"],
     )
 
     messages = [
