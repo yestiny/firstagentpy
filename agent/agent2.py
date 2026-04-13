@@ -51,7 +51,7 @@ def chat():
         base_url=api_config["base_url"],
         model=api_config["model"],
         max_completion_tokens=80,
-        # streaming=True,
+        streaming=True,
     )
 
 
@@ -82,15 +82,16 @@ You need answer in Chinese. """
     config = {"configurable": {"thread_id": "1"}}
 
 
-    response1 = agent.invoke(
+    response1 = agent.stream(
         {"messages": [{"role": "user", "content": "外面天气如何?"}]},
         config=config,
-        context=Context(user_id="1")
+        context=Context(user_id="1"),
+        stream_mode="messages"
     )
     print("==============================================")
 
-    ai_msg = response1["messages"][-1]
-    print(ai_msg.content)
+    for msg_chunk, metadata in response1:
+        print(msg_chunk.model_dump_json(), flush=True)
 
 
     print("==============================================")
