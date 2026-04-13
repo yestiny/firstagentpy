@@ -1,7 +1,7 @@
 from langchain_openai import ChatOpenAI
 from config.config import get_config
 
-def main():
+def chat():
 
     api_config = get_config()
 
@@ -32,5 +32,5 @@ def main():
         print(chunk.model_dump_json())
 
 if __name__ == "__main__":
-    main()
+    chat()
 
