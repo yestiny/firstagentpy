@@ -7,6 +7,8 @@ from langgraph.checkpoint.memory import InMemorySaver
 from dataclasses import dataclass
 from langchain.agents.structured_output import ToolStrategy
 import json
+from openai import OpenAI
+from langgraph.graph import StateGraph
 
 # define response format
 @dataclass
