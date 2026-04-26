@@ -52,7 +52,7 @@ def chat():
         api_key=api_config["api_key"],
         base_url=api_config["base_url"],
         model=api_config["model"],
-        max_completion_tokens=80,
+        max_completion_tokens=500,
         streaming=True,
     )
 
@@ -90,13 +90,14 @@ You need answer in Chinese. """
         context=Context(user_id="1"),
         stream_mode="messages"
     )
-    print("==============================================")
+    print("STREAM_BEGIN==============================================")
 
     for msg_chunk, metadata in response1:
-        print(msg_chunk.model_dump_json(), flush=True)
+        print(f"{msg_chunk.model_dump_json()},", flush=True)
 
 
-    print("==============================================")
+    print("STREAM_END==============================================")
+
 
 
     # Note that we can continue the conversation using the same `thread_id`.
@@ -105,11 +106,14 @@ You need answer in Chinese. """
         config=config,
         context=Context(user_id="1")
     )
+    print("INVOKE_BEGIN==============================================")
 
-    ai_msg = response2["messages"][-1]
-    print(ai_msg.content)
+    ai_msg = response2["messages"]
+    for msg in ai_msg:
+        msg.pretty_print()
+    # print(ai_msg.content)
 
-    print("==============================================")
+    print("INVOKE_END==============================================")
 
     
     
