@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(ls /Users/yestin/1-code/3-py/2-prac/1-firstagentdemo/firstagentpy/.venv/lib/python*/site-packages/langchain_core/)",
-      "Bash(grep:*)"
-    ]
-  }
-}
