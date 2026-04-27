@@ -39,14 +39,9 @@ def get_user_location(runtime: ToolRuntime[Context]) -> str:
     user_id = runtime.context.user_id
     return "悉尼" if user_id == "1" else "墨尔本"
 
-def chat():
-
-# get api config from the os environment variables
+def create_weather_agent():
+    """Create and return the weather agent."""
     api_config = get_config()
-
-    print(api_config["api_key"][:5] + "*****")
-
-    """参考百炼文档实现https://bailian.console.aliyun.com/cn-beijing/?spm=5176.12818093_47.overview_recent.1.7fa82cc9Fv7yKk&tab=api#/api/?type=model&url=2833609"""
 
     llm = ChatOpenAI(
         api_key=api_config["api_key"],
@@ -56,7 +51,6 @@ def chat():
         streaming=True,
     )
 
-
     SYSTEM_PROMPT = """You are an expert weather forecaster, who speaks in puns.
 
 You have access to two tools:
@@ -65,76 +59,62 @@ You have access to two tools:
 - get_user_location: use this to get the user's location
 
 If a user asks you for the weather, make sure you know the location. If you can tell from the question that they mean wherever they are, use the get_user_location tool to find their location.
-You need answer in Chinese. """
+You need answer in Chinese."""
 
-# use langchain api to create an agent
     agent = create_agent(
         model=llm,
         system_prompt=SYSTEM_PROMPT,
         tools=[get_user_location, get_weather_for_location],
         context_schema=Context,
-        # aliyun not supported for the formatted output
-        # response_format=ToolStrategy(ResponseFormat),
         response_format=None,
         checkpointer=checkpointer
-
     )
-
-    # `thread_id` is a unique identifier for a given conversation.
-    config = {"configurable": {"thread_id": "1"}}
+    return agent
 
 
-    response1 = agent.stream(
-        {"messages": [{"role": "user", "content": "外面天气如何?"}]},
-        config=config,
-        context=Context(user_id="1"),
-        stream_mode="messages",
-        version="v2",#在messages的mode下 v1和v2返回的结构不同，v1是2元素tuple（(token, metadata)），v2是字典包裹的2元素tuple（{"type": "messages", "data": (token, metadata)}）
-    )
-    print("STREAM_BEGIN==============================================")
-
-# steam_mode="messages" and version="v1"
-    # for msg_chunk,metadata in response1:
-    #     print(f"{msg_chunk.model_dump_json()},", flush=True)
-
-# steam_mode="messages" and version="v2"，这里参照官网文档的代码解析输出
-    for chunk in response1:
-        if chunk["type"] == "messages":
-            token, metadata = chunk["data"]
-            print(f"node: {metadata['langgraph_node']}")
-            print(f"content: {token.content_blocks}")
-            print("\n")
-
-    # steam_mode="updates" and version="v2"
-    # for chunk in response1:
-    #     if chunk["type"] == "updates":
-    #         for step,data in chunk["data"].items():
-    #             print(f"step:{step}")
-    #             print(f"content:{data['messages'][-1]}")
-
-
-
-    print("STREAM_END==============================================")
-
-
-
-    # Note that we can continue the conversation using the same `thread_id`.
-    response2 = agent.invoke(
-        {"messages": [{"role": "user", "content": "谢谢！"}]},
+def invoke_agent(agent, user_message: str, thread_id: str = "1"):
+    """Invoke the agent with a user message and return the response."""
+    config = {"configurable": {"thread_id": thread_id}}
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": user_message}]},
         config=config,
         context=Context(user_id="1")
     )
+    return response
+
+
+def stream_agent(agent, user_message: str, thread_id: str = "1"):
+    """Stream the agent response as chunks."""
+    config = {"configurable": {"thread_id": thread_id}}
+    return agent.stream(
+        {"messages": [{"role": "user", "content": user_message}]},
+        config=config,
+        context=Context(user_id="1"),
+        stream_mode="messages",
+        version="v2",
+    )
+
+
+def chat():
+    """Main entry point for standalone execution."""
+    api_config = get_config()
+    print(api_config["api_key"][:5] + "*****")
+
+    agent = create_weather_agent()
+    config = {"configurable": {"thread_id": "1"}}
+
+    print("STREAM_BEGIN==============================================")
+    print("STREAM_END==============================================")
+
+    response2 = invoke_agent(agent, "谢谢！")
     print("INVOKE_BEGIN==============================================")
 
     ai_msg = response2["messages"]
     for msg in ai_msg:
         msg.pretty_print()
-    # print(ai_msg.content)
 
     print("INVOKE_END==============================================")
 
-    
-    
 
 if __name__ == "__main__":
     chat()
