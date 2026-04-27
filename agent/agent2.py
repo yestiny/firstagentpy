@@ -88,12 +88,30 @@ You need answer in Chinese. """
         {"messages": [{"role": "user", "content": "外面天气如何?"}]},
         config=config,
         context=Context(user_id="1"),
-        stream_mode="messages"
+        stream_mode="messages",
+        version="v2",#在messages的mode下 v1和v2返回的结构不同，v1是2元素tuple（(token, metadata)），v2是字典包裹的2元素tuple（{"type": "messages", "data": (token, metadata)}）
     )
     print("STREAM_BEGIN==============================================")
 
-    for msg_chunk, metadata in response1:
-        print(f"{msg_chunk.model_dump_json()},", flush=True)
+# steam_mode="messages" and version="v1"
+    # for msg_chunk,metadata in response1:
+    #     print(f"{msg_chunk.model_dump_json()},", flush=True)
+
+# steam_mode="messages" and version="v2"，这里参照官网文档的代码解析输出
+    for chunk in response1:
+        if chunk["type"] == "messages":
+            token, metadata = chunk["data"]
+            print(f"node: {metadata['langgraph_node']}")
+            print(f"content: {token.content_blocks}")
+            print("\n")
+
+    # steam_mode="updates" and version="v2"
+    # for chunk in response1:
+    #     if chunk["type"] == "updates":
+    #         for step,data in chunk["data"].items():
+    #             print(f"step:{step}")
+    #             print(f"content:{data['messages'][-1]}")
+
 
 
     print("STREAM_END==============================================")
